@@ -28,6 +28,8 @@ git checkout main
 git merge feature1
 git push origin main
 
+
+
 ex2 docker
 # Step 1 – Create project folder
 mkdir docker-demo
@@ -46,8 +48,12 @@ docker ps
 # Step 7 – Test in browser
 http://localhost:8080
 
+
+
 ex3.FLASK WITH DOCKER
-app.py
+# mkdir flask-docker
+cd flask-docker
+# app.py
 from flask import Flask
 app = Flask(__name__)
 @app.route('/')
@@ -55,9 +61,9 @@ def home():
  return "Hello from Flask running in Docker!"
 if __name__ == "__main__":
  app.run(host="0.0.0.0", port=5000)
-requirements.txt
+# requirements.txt
 Flask
-Dockerfile
+# Dockerfile
 FROM python:3.9-slim
 WORKDIR /app
 COPY requirements.txt .
@@ -65,20 +71,26 @@ RUN pip install -r requirements.txt
 COPY . .
 EXPOSE 5000
 CMD ["python", "app.py"]
+# inside terminal run
 docker build -t flask-docker-app .
 docker run -p 5000:5000 flask-docker-app
- Open in browser:
+# Open in browser:
 http://localhost:5000
-Push to docker
+# Push to docker
 docker login
 docker tag flask-docker-app yourname/flask-docker-app:latest
 docker push yourname/flask-docker-app:latest
-test
+# test
 docker pull yourname/flask-docker-app:latest
+# Run
 docker run -p 5000:5000 yourname/flask-docker-app:latest
 
+
+
 ex4 Jenkins deployment Using Docker
-Create docker-compose.yml
+# mkdir jenkins-docker
+cd jenkins-docker
+# Create docker-compose.yml
 version: '3.8'
 
 services:
@@ -92,18 +104,18 @@ services:
 
 volumes:
   jenkins_home:
-
+# run in terminal
 docker compose up -d
-To Get the admin password:
-docker exec sample-jenkins-1 cat /var/jenkins_home/secrets/initialAdminPassword(copy password)
-Then open Jenkins: http://localhost:8080
+# To Get the admin password:
+docker exec sample-jenkins-1 cat /var/jenkins_home/secrets/initialAdminPassword  (copy password)
+# Then open Jenkins: http://localhost:8080
 1. Complete Jenkins setup
 o Install Suggested Plugins
 o Create admin user
 2. Install “HTML Publisher” plugin
 o Go to: Manage Jenkins → Plugins → Available Plugins → Search “HTML
 Publisher” → Install
-3.new item -> give name(simple-html-site) -> select pipeline -> ok 
+3.Go to New Item → Pipeline -> give name(simple-html-site) -> select pipeline -> ok 
 code:
 pipeline {
     agent any
@@ -137,29 +149,34 @@ pipeline {
         }
     }
 }
-save it
+# save it
 4. Click Build Now
 o After it finishes, open build → click Simple HTML Site on left side.
  Your web page appears — “Welcome to Jenkins Static Site”
- 
 
- EX5: CI Pipeline: Python App → GitHub → Docker Hub
-app.py
+
+
+
+## EX5: CI Pipeline: Python App → GitHub → Docker Hub
+# mkdir demo
+cd demo
+# app.py
 print("Hello CI Pipeline from Beereddy!")
-Dockerfile
+# create Dockerfile
 FROM python:3.11
 WORKDIR /app
 COPY . .
 CMD ["python", "app.py"]
-Step 4 — Build and test locally
+# Step 4 — Build and test locally
 docker build -t beereddy2004/demo:local .
 docker run beereddy2004/demo:local
- You should see:
+# You should see:
 Hello CI Pipeline from Beereddy!
-Step 5 — Login and push manually (optional)
+# this is optional Step 5 — Login and push manually (optional)
 docker login
 docker push beereddy2004/demo:local
 mkdir .github/workflows/main.yml
+# paste the below code in main.yml
 name: Docker Build & Push
 on: [push]
 jobs:
@@ -175,41 +192,43 @@ jobs:
  with:
  push: true
  tags: beereddy2004/demo:latest
-Initialize git and commit
+# Initialize git and commit
 git init
 git add .
 git commit -m "initial commit"
 git branch -M main
 git remote add origin https://github.com/beereddy2004/demo.git
 git push -u origin main
-Step 9 — Add GitHub Secrets
+# Step 9 — Add GitHub Secrets
 Go to:
 GitHub → demo repo → Settings → Secrets → Actions
 Add two secrets:
-Secret Name Value
-DOCKERHUB_USERNAME beereddy2004
-DOCKERHUB_TOKEN
-(create token in Docker Hub → Account Settings → Security →
-New Access Token)
- Step 10 — Done
+Secret Name            Value
+DOCKERHUB_USERNAME     beereddy2004
+DOCKERHUB_TOKEN        (create token in Docker Hub → Account Settings → Security →New Access Token)
+# Step 10 — Done
 Push any code change:
 git add .
 git commit -m "update"
 git push
-Then go to your GitHub repo → Actions tab → see the workflow run.
-After success, check Docker Hub →
+# Then go to your GitHub repo → Actions tab → see the workflow run.
+# After success, check Docker Hub →
 docker build -t beereddy2004/demo:local .
 docker push beereddy2004/demo:local
 
-ex6 Manage Kubernetes Resources Using CLI
-download minikube:
+
+
+
+
+## ex6 Manage Kubernetes Resources Using CLI
+# download minikube:
 choco source add --name=chocolatey --source=https://community.chocolatey.org/api/v2/
 
 choco install minikube --source="http://192.168.3.15/chocolatey;https://community.chocolatey.org/api/v2/"
-
+# in terminal run the following
 minikube start --driver=docker
 kubectl get nodes
-nginx-pod.yaml
+# create nginx-pod.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -220,23 +239,34 @@ containers:
 image: nginx:latest
 ports:
 - containerPort: 80
+# in terminal run
 kubectl apply -f nginx-pod.yaml
 kubectl get pods
 kubectl describe pod nginx-pod
+# Step 5 — Access Pod via Port Forwarding
 kubectl port-forward pod/nginx-pod 8080:80
 Meaning: You can open http://localhost:8080 in browser.
-Create deployment
+# Create deployment
 kubectl create deployment my-nginx --image=nginx
-Scale deployment
+kubectl get pods
+# Scale deployment
 kubectl scale deployment my-nginx --replicas=3
 kubectl get pods
+# Update Image Version
 kubectl set image deployment/my-nginx nginx=nginx:1.25
 kubectl expose deployment my-nginx --type=NodePort --port=80
 kubectl get svc
 minikube service my-nginx –url
+# Open that link in your browser → Nginx homepage loads.
+
+
+
+
 
 ex7 Kubernetes Deployment and Service for Python App from Docker Hub
-app.py
+# mkdir hello-flask
+cd hello-flask
+# create app.py
 from flask import Flask
 app = Flask(__name__)
 @app.route('/')
@@ -244,22 +274,28 @@ def home():
  return '<p>hello flask</p>'
 if __name__ == '__main__':
  app.run(host='0.0.0.0', port=5000)
-requirements.txt
+# create requirements.txt
 flask
-Dockerfile
+# create Dockerfile
 FROM python:3.9-slim
 WORKDIR /app
 COPY . /app
 RUN pip install -r requirements.txt
 EXPOSE 5000
 CMD ["python", "app.py"]
+# run in terminal
 docker build -t beereddy2004/hello-flask .
+
 docker run -p 5000:5000 beereddy2004/hello-flask
-Open browser → http://localhost:5000
-Login and push (only once):
+
+# Open browser → http://localhost:5000
+# Login and push (only once):
 docker login
+
 docker push beereddy2004/hello-flask
-hello-flask.yaml
+
+
+# create hello-flask.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -291,9 +327,16 @@ spec:
  ports:
  - port: 5000
  targetPort: 5000
-Deploy on Minikube
+
+# Deploy on Minikube
 minikube start --driver=docker
+
+# Deploy to Kubernetes
 kubectl apply -f hello-flask.yaml
+
 kubectl get all
-Access the App
+
+# Access the App
 minikube service flask-svc --url
+
+# open the url , you will see hello flask
